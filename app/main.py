@@ -23,5 +23,5 @@ def predict_dns(data: DNSRequest):
 @app.get("/healthz")
 def health_check():
     return {"status": "ok"}
-
+#commented
 

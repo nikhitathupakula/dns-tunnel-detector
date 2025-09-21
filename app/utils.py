@@ -16,3 +16,4 @@ def log_prediction(features, prediction):
         "features": features,
         "prediction": prediction
     })
+#commented
