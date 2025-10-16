@@ -1,7 +1,13 @@
 # app/main.py
 from fastapi import FastAPI
 from pydantic import BaseModel
-from app.utils import predict, log_prediction
+try:
+    from app.utils import predict, log_prediction
+except Exception as e:
+    print(f"❌ Failed to import utils: {e}")
+    predict = lambda x: "Error"
+    log_prediction = lambda *a, **kw: None
+
 
 app = FastAPI(title="DNS Tunneling Detection API")
 
