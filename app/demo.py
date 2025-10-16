@@ -1,21 +1,42 @@
 # app/demo.py
 import streamlit as st
 import requests
+import pandas as pd
+import tempfile
+import os
+import subprocess
 
-st.title("DNS Tunneling Detection Demo")
+st.set_page_config(page_title="DNS Tunneling Detection", page_icon="🧠")
+st.title("🧠 DNS Tunneling Detection Demo")
 
-query_length = st.slider("Query Length", 1, 200, 50)
-entropy = st.slider("Entropy", 0.0, 8.0, 3.5)
-nxdomain_ratio = st.slider("NXDOMAIN Ratio", 0.0, 1.0, 0.2)
-char_digit_ratio = st.slider("Char/Digit Ratio", 0.0, 2.0, 0.5)
+uploaded_file = st.file_uploader("Upload a PCAP file", type=["pcap"])
 
-if st.button("Check"):
-    payload = {
-        "query_length": query_length,
-        "entropy": entropy,
-        "nxdomain_ratio": nxdomain_ratio,
-        "char_digit_ratio": char_digit_ratio
-    }
-    res = requests.post("http://127.0.0.1:8000/predict", json=payload).json()
-    st.write("Prediction:", res["prediction"])
-#not added only
+if uploaded_file is not None:
+    # Save the uploaded file temporarily
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".pcap") as tmp_file:
+        tmp_file.write(uploaded_file.read())
+        tmp_path = tmp_file.name
+
+    st.info("Extracting features from PCAP... this may take a moment ⏳")
+
+    # Run your existing feature extractor (extract_features.py)
+    # Assuming it takes input and output arguments
+    os.system(f"python extract_features.py --input {tmp_path} --output /tmp/features.csv")
+
+    df = pd.read_csv("/tmp/features.csv")
+    st.write("Extracted features:", df.head())
+
+    if st.button("Run Detection"):
+        st.info("Running predictions...")
+        preds = []
+        for _, row in df.iterrows():
+            payload = row.to_dict()
+            res = requests.post("http://127.0.0.1:8000/predict", json=payload).json()
+            preds.append(res["prediction"])
+
+        df["prediction"] = preds
+        st.success("✅ Detection complete!")
+        st.dataframe(df[["registered_domain", "prediction"]])
+
+        suspicious = df[df["prediction"] == "Suspicious"]
+        st.warning(f"⚠️ Found {len(suspicious)} suspicious domains.")
