@@ -22,23 +22,48 @@ if uploaded_file is not None:
     # Run your existing feature extractor (extract_features.py)
     # Assuming it takes input and output arguments
     out_path = os.path.join(tempfile.gettempdir(), "features.csv")
-    os.system(f"python extract_features.py --input {tmp_path} --output {out_path}")
     
-    if not os.path.exists(out_path):
+    import subprocess
+    st.info("Extracting features from PCAP... this may take a moment ⏳")
+    out_path = os.path.join(tempfile.gettempdir(), "features.csv")
+
+    # Run feature extractor with full error capture
+    result = subprocess.run(
+    ["python", "extract_features.py", "--input", tmp_path, "--output", out_path],
+    capture_output=True, text=True)
+
+    # Show logs (for debugging)
+    if result.stdout:
+        st.text("stdout:\n" + result.stdout)
+    if result.stderr:
+        st.text("stderr:\n" + result.stderr)
+    
+    if result.returncode != 0 or not os.path.exists(out_path):
         st.error("❌ Feature extraction failed.")
+        st.stop()
     else:
         df = pd.read_csv(out_path)
-        
-    st.write("Extracted features:", df.head())
+        st.write("Extracted features:", df.head())
+
 
     if st.button("Run Detection"):
         st.info("Running predictions...")
         preds = []
+        API_URL = os.getenv("API_URL", "https://your-fastapi-service.onrender.com")
         for _, row in df.iterrows():
-            payload = row.to_dict()
-            API_URL = os.getenv("API_URL", "http://127.0.0.1:8000")
-            res = requests.post(f"{API_URL}/predict", json=payload).json()
-            preds.append(res["prediction"])
+            try:
+                payload = {
+                    "query_length": int(row["query_length"]),
+                    "entropy": float(row["entropy"]),
+                    "nxdomain_ratio": float(row["nxdomain_ratio"]),
+                    "char_digit_ratio": float(row["char_digit_ratio"]),
+                }
+                res = requests.post(f"{API_URL}/predict", json=payload).json()
+                preds.append(res["prediction"])
+            except Exception as e:
+                preds.append("Error")
+                st.error(f"Prediction error: {e}")
+
 
         df["prediction"] = preds
         st.success("✅ Detection complete!")
