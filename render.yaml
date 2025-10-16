@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: dns-tunnel-detector-frontend
+    env: docker
+    dockerfilePath: ./Dockerfile.streamlit
+    plan: free
+    envVars:
+      - key: API_URL
+        value: https://dns-tunnel-detector-backend.onrender.com  # backend URL after deployment
+    healthCheckPath: /
+    autoDeploy: true
+
+  - type: web
+    name: dns-tunnel-detector-backend
+    env: docker
+    dockerfilePath: ./Dockerfile.fastapi
+    plan: free
+    healthCheckPath: /healthz
+    autoDeploy: true
