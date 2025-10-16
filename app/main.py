@@ -26,3 +26,14 @@ def predict_dns(data: DNSRequest):
 @app.get("/healthz")
 def health_check():
     return {"status": "ok"}
+
+
+from fastapi.middleware.cors import CORSMiddleware
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # for testing; restrict to your frontend URL in production
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
