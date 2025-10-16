@@ -31,7 +31,8 @@ if uploaded_file is not None:
         preds = []
         for _, row in df.iterrows():
             payload = row.to_dict()
-            res = requests.post("http://127.0.0.1:8000/predict", json=payload).json()
+            API_URL = os.getenv("API_URL", "http://127.0.0.1:8000")
+            res = requests.post(f"{API_URL}/predict", json=payload).json()
             preds.append(res["prediction"])
 
         df["prediction"] = preds
