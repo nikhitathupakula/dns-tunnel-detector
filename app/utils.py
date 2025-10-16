@@ -9,10 +9,15 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MODEL_PATH = os.path.join(BASE_DIR, "model", "dns_rf_model.pkl")
 
 # Load model once
-model = joblib.load(MODEL_PATH)
+try:
+    model = joblib.load(MODEL_PATH)
+except Exception as e:
+    print(f"❌ Failed to load model at {MODEL_PATH}: {e}")
+    model = None
 
 # Simple in-memory log
-logs = []
+from collections import deque
+logs = deque(maxlen=1000)
 
 def predict(features: list) -> str:
     X = np.array(features).reshape(1, -1)
