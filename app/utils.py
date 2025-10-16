@@ -6,7 +6,7 @@ from datetime import datetime
 
 # Paths
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-MODEL_PATH = os.path.join(BASE_DIR, "models", "dns_rf_model.pkl")
+MODEL_PATH = os.path.join(BASE_DIR, "model", "dns_rf_model.pkl")
 
 # Load model once
 model = joblib.load(MODEL_PATH)
