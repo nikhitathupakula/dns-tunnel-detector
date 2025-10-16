@@ -1,12 +1,10 @@
 # app/main.py
-from app.utils import log_prediction
 from fastapi import FastAPI
 from pydantic import BaseModel
-from app.utils import predict
+from app.utils import predict, log_prediction
 
 app = FastAPI(title="DNS Tunneling Detection API")
 
-# request schema
 class DNSRequest(BaseModel):
     query_length: int
     entropy: float
@@ -15,7 +13,12 @@ class DNSRequest(BaseModel):
 
 @app.post("/predict")
 def predict_dns(data: DNSRequest):
-    features = [data.query_length, data.entropy, data.nxdomain_ratio, data.char_digit_ratio]
+    features = [
+        data.query_length,
+        data.entropy,
+        data.nxdomain_ratio,
+        data.char_digit_ratio,
+    ]
     prediction = predict(features)
     log_prediction(features, prediction)
     return {"prediction": prediction}
@@ -23,5 +26,3 @@ def predict_dns(data: DNSRequest):
 @app.get("/healthz")
 def health_check():
     return {"status": "ok"}
-#commented
-
