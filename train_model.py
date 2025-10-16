@@ -13,7 +13,7 @@ import xgboost as xgb
 # -------------------
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA_DIR = os.path.join(BASE_DIR, "data")
-MODEL_DIR = os.path.join(BASE_DIR, "models")
+MODEL_DIR = os.path.join(BASE_DIR, "model")  # singular, matches your repo
 
 # Collect files
 heavy_files = glob.glob(os.path.join(DATA_DIR, "Attack_heavy_Benign", "Attacks", "*.pcap.csv"))
@@ -120,4 +120,5 @@ print(xgb_importances.to_string(index=False))
 os.makedirs(MODEL_DIR, exist_ok=True)
 joblib.dump(rf, os.path.join(MODEL_DIR, "dns_rf_model.pkl"))
 joblib.dump(xgb_clf, os.path.join(MODEL_DIR, "dns_xgb_model.pkl"))
+
 print(f"\n✅ Models saved in {MODEL_DIR}")
