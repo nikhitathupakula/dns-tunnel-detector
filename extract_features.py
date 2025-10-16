@@ -5,11 +5,16 @@ import numpy as np
 import math
 import tldextract  # pip install tldextract
 
-# --- File paths ---
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-PCAP_PATH = os.path.join(BASE_DIR, "data", "tuns.pcap")   # change name if needed
-OUT_RAW = os.path.join(BASE_DIR, "data", "dns_features_raw.csv")
-OUT_AGG = os.path.join(BASE_DIR, "data", "dns_features_agg.csv")
+import argparse
+
+# --- Argument parsing ---
+parser = argparse.ArgumentParser()
+parser.add_argument("--input", required=True, help="Path to input PCAP file")
+parser.add_argument("--output", required=True, help="Path to output CSV")
+args = parser.parse_args()
+
+PCAP_PATH = args.input
+OUT_AGG = args.output
 
 # --- Helper functions ---
 def shannon_entropy(s: str) -> float:
@@ -49,8 +54,9 @@ def is_nxdomain(resp_code: str, answers: int) -> int:
 cap = pyshark.FileCapture(
     PCAP_PATH,
     display_filter="dns",
-    tshark_path="C:/Program Files/Wireshark/tshark.exe"
+    tshark_path="/usr/bin/tshark"  # Linux default path
 )
+
 
 features = []
 
@@ -108,6 +114,6 @@ agg = df.groupby("registered_domain").agg(
     unique_subdomains=("query_name", lambda s: s.nunique()),
 ).fillna(0)
 
-agg.to_csv(OUT_AGG)
+agg.to_csv(OUT_AGG, index=False)
 print(f"✅ Saved aggregated features to {OUT_AGG}, domains={len(agg)}")
-print(agg.head())
+
