@@ -21,9 +21,14 @@ if uploaded_file is not None:
 
     # Run your existing feature extractor (extract_features.py)
     # Assuming it takes input and output arguments
-    os.system(f"python extract_features.py --input {tmp_path} --output /tmp/features.csv")
-
-    df = pd.read_csv("/tmp/features.csv")
+    out_path = os.path.join(tempfile.gettempdir(), "features.csv")
+    os.system(f"python extract_features.py --input {tmp_path} --output {out_path}")
+    
+    if not os.path.exists(out_path):
+        st.error("❌ Feature extraction failed.")
+    else:
+        df = pd.read_csv(out_path)
+        
     st.write("Extracted features:", df.head())
 
     if st.button("Run Detection"):
